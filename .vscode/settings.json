@@ -1,0 +1,4 @@
+{
+  "python.formatting.provider": "black",
+  "python.pythonPath": "/Users/dean/.local/share/virtualenvs/haskell_lnl-vqtnl29s/bin/python"
+}
