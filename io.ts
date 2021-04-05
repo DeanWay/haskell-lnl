@@ -1,14 +1,8 @@
 import { IO } from "monet"
-import { Collection, Range } from "immutable"
+import { Collection, Range, Seq } from "immutable"
 
 type Random = IO<number>
 export const random: Random = IO(Math.random)
-
-type SumOfRandoms = (min: number, max: number) => IO<Number>
-export const sumOfRandoms: SumOfRandoms = (min, max) => {
-    const dice = randRange(min, max)
-    return dice.ap(dice.map(x => y => x + y))
-}
 
 type Amplify = (min: number, max: number) => (x: number) => number
 export const amplify: Amplify = (min, max) => x => {
@@ -20,26 +14,40 @@ export const amplify: Amplify = (min, max) => x => {
 type RandRange = (min: number, max: number) => IO<number>
 export const randRange: RandRange = (min, max) => random.map(amplify(min, max))
 
-type Choose = <T>(items: ReadonlyArray<T>) => IO<T>
-export const choose: Choose = items => randRange(0, items.length - 1).map(i => items[i])
+type Choice = <V>(items: Seq.Indexed<V>) => IO<V>
+export const choice: Choice = items => randRange(0, items.size - 1).map(i => items.get(i))
+
+type Choices = <V>(items: Seq.Indexed<V>) => (n: number) => IO<Seq<number, V>>
+export const choices: Choices = items => n => sequenceIO(Range(0, n).map(() => choice(items)))
+
+type SequenceIO = <T>(actions: Seq.Indexed<IO<T>>) => IO<Seq.Indexed<T>>
+const sequenceIO: SequenceIO = actions => IO(() => actions.map(action => action.run()))
 
 type Sample = (randomGenerator: IO<string>) => (n: number) => IO<Collection.Keyed<string, number>>
 export const sample: Sample = randomGenerator => n => (
-    IO(() => (
-        Range(0, n)
-        .map(() => randomGenerator.run())
-        .groupBy(x => x)
-        .map(x => x.count())
-    ))
+    sequenceIO(Range(0, n).map(() => randomGenerator))
+    .map(
+        results => (
+            results
+            .groupBy(x => x)
+            .map(group => group.count())
+        )
+    )
 );
 
-const moves = ["rock", "paper", "scissors"] as const
-type Move = typeof moves[number]
-type Game = IO<Move>
-export const game: Game = choose(moves)
+const sum = (seq: Seq<any, number>) => seq.reduce((x,y) => x + y, 0)
+export const sumOfIndependent = (actions: IO<Seq<any, number>>) => (
+    actions.map(sum)
+)
 
-// const show = (x: any) => JSON.stringify(x)
-// const myRandRange = randRange(0, 50)
-// const mySampler = sample(myRandRange.map(show))
-// const print = (x: any) => IO(() => console.log(x))
-// mySampler(10000000).bind(print).run()
+type DependentOn = <T>(a: IO<T>) => <V>(fn: (val: T) => IO<V>) => IO<V>
+export const dependentOn: DependentOn = a => fn => a.flatMap(fn)
+
+const moves = Seq(["rock", "paper", "scissors"] as const)
+export const rockPaperScissorsGame = choice(moves)
+
+export const dice = Range(1, 7)
+export const diceThrow = choice(dice)
+export const nDiceThrows = choices(dice)
+export const sumOfNDiceThrows = (x: number) => sumOfIndependent(nDiceThrows(x))
+export const diceGame = dependentOn(diceThrow)(sumOfNDiceThrows)
