@@ -8,5 +8,5 @@ def my_program(x: int) -> str:
     return bool_to_yes_no(is_big(x))
 
 if __name__ == "__main__":
-    lint = input()
-    print(my_program(int(line))
+    line = input("Is it a big number? ")
+    print(my_program(int(line)))

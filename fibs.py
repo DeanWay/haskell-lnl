@@ -27,10 +27,8 @@ def fibs():
     return map(first, iterate(next_fib, (0,1)))
 
 
-def fibonacci(n):
+def fibonacci_(n):
     return nth(fibs(), n)
-
-
 
 
 def every_other_fibonacci_element(n):
@@ -44,20 +42,18 @@ def every_other_fibonacci_element(n):
     return elements
 
 
-
-
 def every_n(iterable, n, start=0):
     return islice(iterable, start, None, n)
 
 
-def every_other_fibonacci_element():
+def every_other_fibonacci_element_():
     return every_n(fibs(), n=2)
 
 
 def tail(iterable):
     return islice(iterable, 1, None)
 
-def fibs_gen():
+def fibs_():
     yield 0
     yield 1
     fibs1, fibs2 = tee(fibs())
