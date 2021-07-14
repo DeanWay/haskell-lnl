@@ -5,14 +5,31 @@ from itertools import islice, tee
 from more_itertools import iterate, take, first, nth
 
 
-def fibonacci(n):
-    current = 0
-    nxt = 1
+def fibonacci_recursive(n):
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+
+def fibonacci_iterative(n):
+    current, nxt = 0, 1
     for _ in range(n):
         tmp = nxt
         nxt = current + nxt
         current = tmp
     return current
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -27,7 +44,7 @@ def fibs():
     return map(first, iterate(next_fib, (0,1)))
 
 
-def fibonacci_(n):
+def fibonacci(n):
     return nth(fibs(), n)
 
 
@@ -56,5 +73,5 @@ def tail(iterable):
 def fibs_():
     yield 0
     yield 1
-    fibs1, fibs2 = tee(fibs())
+    fibs1, fibs2 = tee(fibs_())
     yield from map(add, fibs1, tail(fibs2))

@@ -10,10 +10,6 @@ data TrafficLightStep = TrafficLightStep
 
 type TrafficLightTimerConfig = [TrafficLightStep]
 
-data Name = RobotName Int | HumanName String
-
-names = [RobotName 12345, HumanName "Steven"]
-
 trafficLightIterpretedMeaning color = case color of
   RedLight -> "Stop"
   GreenLight -> "Go"
